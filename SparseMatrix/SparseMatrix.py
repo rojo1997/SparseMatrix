@@ -77,9 +77,9 @@ class SparseMatrix:
         elif isinstance(value, SparseMatrix):
             pass
         else: # Si es un valor real
-            np.delete(self.T, index, axis = 0)
+            self.T = np.delete(self.T, index, axis = 0)
             if value != self.fill_value:
-                if index.shape[0] == 0:
+                if (index.shape[0] == 0) or (index.shape[0] == 1):
                     self.T = np.vstack([self.T,np.append(args,value)])
                 else:
                     tuples = product([
@@ -115,13 +115,13 @@ class SparseMatrix:
 
     def max(self, axis = None):
         if axis == None:
-            return self.T[:,-1].max()
+            return np.append(self.T[:,-1],self.fill_value).max()
         else:
             pass
 
     def min(self, axis = None):
         if axis == None:
-            return self.T[:,-1].min()
+            return np.append(self.T[:,-1],self.fill_value).min()
         else:
             pass
 
@@ -133,17 +133,36 @@ class SparseMatrix:
         else:
             pass
     
-    def var(self, axis = None):
+    def std(self, axis = None):
         if axis == None:
-            return self.T[:,-1].var()
+            return np.sqrt(self.var())
         else:
             pass
 
-    def std(self, axis = None):
+    def var(self, axis = None):
         if axis == None:
-            return self.T[:,-1].std()
+            mean = self.mean()
+            n = float(self.shape.prod())
+            return (np.power(self.T[:,-1] - mean,2).sum() + (self.fill_value - mean)**2 * (n - self.T.shape[0])) / n
         else:
             pass
 
     def sum(self, axis = None):
         return self.T[:,-1].sum() + (self.shape.prod() - self.T.shape[0]) * self.fill_value
+
+    def __add__(self,M):
+        if isinstance(M,np.ndarray):
+            pass
+        elif isinstance(M,SparseMatrix):
+            pass
+        else:
+            out = self.copy()
+            out.fill_value += M
+            out.T[:,-1] = out.T[:,-1] + M
+            return out
+
+    def copy(self):
+        M = SparseMatrix(shape = self.shape, fill_value = self.fill_value)
+        M.T = self.T.copy()
+        return M
+            
