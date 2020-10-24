@@ -22,10 +22,10 @@ class SparseMatrixTest(unittest.TestCase):
 
     def test_from_numpy(self):
         M = SparseMatrix.from_numpy(self.A)
-        assert M.shape.prod() == np.array(self.shape).prod(), 'No tienen el mismo numero de elementos.'
-        assert M.sum() == self.A.sum(), 'Error en la suma de elementos.'
-        assert M.min() >= self.low, 'No cumple el mínimo'
-        assert M.max() < self.high, 'No cumple el máximo'
+        self.assertEqual(M.shape.prod(),np.array(self.shape).prod())
+        self.assertEqual(M.sum(),self.A.sum())
+        self.assertGreaterEqual(M.min(),self.low)
+        self.assertLess(M.max(),self.high)
 
     def test_randint(self):
         M = SparseMatrix.randint(
@@ -35,45 +35,45 @@ class SparseMatrixTest(unittest.TestCase):
             self.shape, 
             self.fill_value
         )
-        assert M.min() >= self.low, 'No cumple el mínimo'
-        assert M.max() < self.high, 'No cumple el máximo'
+        self.assertGreaterEqual(M.min(),self.low)
+        self.assertLess(M.max(),self.high)
         n = float(np.array(self.shape).prod())
-        assert (M.T.shape[0]/n) == self.sparsity, 'Dispersión cumplida'
+        self.assertEqual(M.T.shape[0]/n,self.sparsity)
 
     def test_sum(self):
         M = SparseMatrix.from_numpy(self.A)
-        assert M.sum() == self.A.sum(), 'No cumple la suma'
+        self.assertEqual(M.sum(),self.A.sum())
 
     def test_min(self):
         M = SparseMatrix.from_numpy(self.A)
-        assert M.min() == self.A.min(), 'No cumple el mínimo'
+        self.assertEqual(M.min(),self.A.min())
 
     def test_max(self):
         M = SparseMatrix.from_numpy(self.A)
-        assert M.max() == self.A.max(), 'No cumple el máximo'
+        self.assertEqual(M.max(),self.A.max())
 
     def test_mean(self):
         M = SparseMatrix.from_numpy(self.A)
-        assert round(M.mean(),5) == round(self.A.mean(),5), 'No cumple la media'
+        self.assertEqual(M.mean(),self.A.mean())
 
     def test_std(self):
         M = SparseMatrix.from_numpy(self.A)
-        assert round(M.std(),5) == round(self.A.std(),5), 'No cumple la desviación típica'
+        self.assertEqual(round(M.std(),5),round(self.A.std(),5))
 
     def test_var(self):
         M = SparseMatrix.from_numpy(self.A)
-        assert round(M.var(),5) == round(self.A.var(),5), 'No cumple la varianza'
+        self.assertEqual(round(M.var(),5),round(self.A.var(),5))
     
     def test_setitem_one(self):
         M = SparseMatrix.from_numpy(self.A)
         for i in range(100):
             self.A[i,i,i] = -1000
             M[i,i,i] = -1000
-            assert self.A[i,i,i] == M[i,i,i], 'Error en la asignación de 1 elemento'
+            self.assertEqual(self.A[i,i,i],M[i,i,i])
     
     def test_add_int(self):
         M = SparseMatrix.from_numpy(self.A)
-        np.all((M + 10).to_numpy() == (self.A + 10)), 'Error suma entero'
+        self.assertTrue(np.all((M + 10).to_numpy() == (self.A + 10)))
 
 if __name__ == "__main__":
     unittest.main(verbosity = 2)
