@@ -1,9 +1,6 @@
 import unittest
 import numpy as np
 
-import sys
-sys.path[0] = sys.path[0].replace('/tests','')
-
 from SparseMatrix.SparseMatrix import SparseMatrix
 
 class SparseMatrixTest(unittest.TestCase):
@@ -54,7 +51,7 @@ class SparseMatrixTest(unittest.TestCase):
 
     def test_mean(self):
         M = SparseMatrix.from_numpy(self.A)
-        self.assertEqual(M.mean(),self.A.mean())
+        self.assertEqual(round(M.mean(),5),round(self.A.mean(),5))
 
     def test_std(self):
         M = SparseMatrix.from_numpy(self.A)
