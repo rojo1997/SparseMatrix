@@ -2,12 +2,20 @@ import numpy as np
 from itertools import product
 from functools import reduce
 
+from SparseMatrix.functions import (
+    cartesian_product,
+    groupby
+)
+
 class SparseMatrix:
     def __init__(self, shape: list or tuple, dtype = np.float64, fill_value = 0.0):
         self.shape = np.array(shape)
         self.dtype = dtype
         self.fill_value = fill_value
-        self.T = np.zeros(shape = (0,self.shape.shape[0] + 1), dtype = self.dtype)
+        self.T = np.zeros(
+            shape = (0,self.shape.shape[0] + 1), 
+            dtype = self.dtype
+        )
 
     @classmethod
     def from_numpy(cls, array: np.array, fill_value = 0.0):
@@ -67,26 +75,22 @@ class SparseMatrix:
     def __setitem__(self, args, value):
         index,args = self.__getindex__(args)
         if isinstance(value,np.ndarray):
-            tuples_args = product([
-                range(a.start,a.stop,a.step) if isinstance(a,slice) 
-                else [a] for a in args
-            ])
-            args_index = np.array([t for t in tuples_args])
+            args_index = cartesian_product(args)
             X = value.ravel().reshape(len(value),1)
-            self.T = np.append(self.T,np.append(args_index, X, axis = 1),axis = 0)
+            self.T = np.append(
+                self.T,
+                np.append(args_index, X, axis = 1),
+                axis = 0
+            )
         elif isinstance(value, SparseMatrix):
             pass
-        else: # Si es un valor real
+        else:
             self.T = np.delete(self.T, index, axis = 0)
             if value != self.fill_value:
                 if (index.shape[0] == 0) or (index.shape[0] == 1):
                     self.T = np.vstack([self.T,np.append(args,value)])
                 else:
-                    tuples = product([
-                        range(a.start,a.stop,a.step) if isinstance(a,slice) 
-                        else [a] for a in args
-                    ])
-                    new_index = np.array([t for t in tuples])
+                    new_index = cartesian_product(args)
                     new_T = np.append(
                         new_index,
                         np.repeat(value,new_index.shape[0]).reshape(new_index.shape[0],1),
@@ -117,7 +121,11 @@ class SparseMatrix:
         if axis == None:
             return np.append(self.T[:,-1],self.fill_value).max()
         else:
-            pass
+            mask = [i for i in range(self.shape.shape[0]) if i != axis]
+            M = SparseMatrix(shape = self.shape[mask])
+            M.T,_ = groupby(self.T,axis = axis, method = np.max)
+            return M
+            
 
     def min(self, axis = None):
         if axis == None:
@@ -165,4 +173,20 @@ class SparseMatrix:
         M = SparseMatrix(shape = self.shape, fill_value = self.fill_value)
         M.T = self.T.copy()
         return M
-            
+
+    def abs_frecuency(self):
+        abs_f = [(self.fill_value,(self.shape.prod() - self.T.shape[0]))]
+        for x in np.unique(self.T[:,-1]):
+            abs_f.append((x,(self.T[:,-1] == x).sum()))
+        return np.array(abs_f)
+    
+    def dot(self,X):
+        if isinstance(X,np.ndarray):
+            pass
+        elif isinstance(X,SparseMatrix):
+            pass
+        else:
+            pass
+
+    def multiply(self,X):
+        pass
